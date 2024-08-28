@@ -4,9 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sea Surface Temperature Visualization</title>
+    <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <input type="file" id="zipFileInput" accept=".zip" />
+    <div class="container">
+      <label htmlFor="zipFileInput">Загрузіть файл у форматі .zip</label>
+      <input id="zipFileInput" type="file" accept=".zip"></input>
+    </div>
     <canvas id="sstCanvas" width="3600" height="1800"></canvas>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
     <script>
