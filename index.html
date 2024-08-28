@@ -6,7 +6,9 @@
     <title>Sea Surface Temperature Visualization</title>
   </head>
   <body>
+    <input type="file" id="zipFileInput" accept=".zip" />
     <canvas id="sstCanvas" width="3600" height="1800"></canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
     <script>
       const BINARY_DIMENSION_X = 36000;
       const BINARY_DIMENSION_Y = 17999;
@@ -22,12 +24,26 @@
       img.onload = () => {
         ctx.drawImage(img, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-        // Load and process the SST grid data
-        fetch("./sst.grid") 
-          .then((response) => response.arrayBuffer())
-          .then((buffer) => {
-            const data = new Uint8Array(buffer);
-            drawSST(data);
+        document
+          .getElementById("zipFileInput")
+          .addEventListener("change", (event) => {
+            const file = event.target.files[0];
+            if (file) {
+              JSZip.loadAsync(file)
+                .then((zip) => {
+                  return zip.file("sst.grid").async("arraybuffer");
+                })
+                .then((buffer) => {
+                  const data = new Uint8Array(buffer);
+                  drawSST(data);
+                })
+                .catch((error) => {
+                  console.error(
+                    "Error reading the .grid file from ZIP:",
+                    error
+                  );
+                });
+            }
           });
       };
 
