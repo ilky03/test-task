@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sea Surface Temperature Visualization</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="container">
       <label htmlFor="zipFileInput">Загрузіть файл у форматі .zip</label>
-      <input id="zipFileInput" type="file" accept=".zip"></input>
+      <input id="zipFileInput" type="file" accept=".zip" />
     </div>
     <canvas id="sstCanvas" width="3600" height="1800"></canvas>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
@@ -52,68 +52,30 @@
       };
 
       function drawSST(data) {
-        const imageData = ctx.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-        const pixels = imageData.data;
+        let currentY = 0;
 
-        for (let y = 0; y < CANVAS_HEIGHT; y++) {
+        function drawRow() {
           for (let x = 0; x < CANVAS_WIDTH; x++) {
-            // Map the canvas coordinates to the grid coordinates
             const gridX = Math.floor((x / CANVAS_WIDTH) * BINARY_DIMENSION_X);
             const gridY = Math.floor(
-              ((CANVAS_HEIGHT - y - 1) / CANVAS_HEIGHT) * BINARY_DIMENSION_Y
+              ((CANVAS_HEIGHT - currentY - 1) / CANVAS_HEIGHT) *
+                BINARY_DIMENSION_Y
             );
             const index = gridY * BINARY_DIMENSION_X + gridX;
-
             const value = data[index];
             if (value !== 0xff) {
-              // 0xFF represents missing data
-              const color = getColorForTemperature(value);
-              const pixelIndex = (y * CANVAS_WIDTH + x) * 4;
-              pixels[pixelIndex] = color.r;
-              pixels[pixelIndex + 1] = color.g;
-              pixels[pixelIndex + 2] = color.b;
-              pixels[pixelIndex + 3] = 255;
+              ctx.fillStyle = `hsl(${290 - value * 2.8}, 100%, 50%)`;
+              ctx.fillRect(x, currentY, 1, 1);
             }
+          }
+          currentY++;
+
+          if (currentY < CANVAS_HEIGHT) {
+            requestAnimationFrame(drawRow);
           }
         }
 
-        ctx.putImageData(imageData, 0, 0);
-      }
-
-      function getColorForTemperature(value) {
-        const minTemp = 30; // Min temp value from data
-        const maxTemp = 93; // Max temp value from data
-        const normalized = (value - minTemp) / (maxTemp - minTemp);
-
-        // Define color stops for the gradient (reversed)
-        const colors = [
-          { r: 0, g: 0, b: 255 }, // Blue (cold)
-          { r: 0, g: 191, b: 255 }, // Light Blue
-          { r: 0, g: 255, b: 0 }, // Green
-          { r: 255, g: 255, b: 0 }, // Yellow
-          { r: 255, g: 69, b: 0 }, // Orange (hot)
-        ];
-
-        const colorIndex = normalized * (colors.length - 1);
-        const lowerIndex = Math.floor(colorIndex);
-        const upperIndex = Math.ceil(colorIndex);
-        const factor = colorIndex - lowerIndex;
-
-        // Interpolate between the two surrounding colors
-        const r = Math.floor(
-          colors[lowerIndex].r +
-            factor * (colors[upperIndex].r - colors[lowerIndex].r)
-        );
-        const g = Math.floor(
-          colors[lowerIndex].g +
-            factor * (colors[upperIndex].g - colors[lowerIndex].g)
-        );
-        const b = Math.floor(
-          colors[lowerIndex].b +
-            factor * (colors[upperIndex].b - colors[lowerIndex].b)
-        );
-
-        return { r, g, b };
+        requestAnimationFrame(drawRow);
       }
     </script>
   </body>
