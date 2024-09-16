@@ -35,11 +35,10 @@
             if (file) {
               JSZip.loadAsync(file)
                 .then((zip) => {
-                  return zip.file("sst.grid").async("arraybuffer");
+                  return zip.file("sst.grid").async("uint8array");
                 })
-                .then((buffer) => {
-                  const data = new Uint8Array(buffer);
-                  drawSST(data);
+                .then((u8) => {
+                  drawSST(u8);
                 })
                 .catch((error) => {
                   console.error(
